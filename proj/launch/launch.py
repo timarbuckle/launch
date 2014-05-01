@@ -10,10 +10,11 @@ class LaunchKeyClient:
     Wrap launchkey api in django client
     """
     def __init__(self):
+        private_key = open(settings.LAUNCHKEY_PRIVATE_KEY, 'r').read()
         self.api = launchkey.API(
             settings.LAUNCHKEY_APP_KEY,
             settings.LAUNCHKEY_SECRET_KEY,
-            settings.LAUNCHKEY_PRIVATE_KEY
+            private_key
         )
 
     def authorize(self, username):

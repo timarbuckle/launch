@@ -1,0 +1,34 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html lang="en">
+<head>
+    <title>Launch</title>
+</head>
+<body>
+    <h1>Demo using LaunchKey API</h1>
+
+    {% if username %}
+        <form name="logout" action="/launch/logout" method="post">
+        {% csrf_token %}
+        <h2>Hello {{ username }}</h2>
+
+        <table width="50%">
+            {% for key, value in data %}
+            <tr>
+                <td>{{ key }}</td><td>{{ value }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <input type="submit" value="Logout">
+        </form>
+    {% else %}
+        <form name="login" action="/launch/login" method="post">
+        {% csrf_token %}
+        Username: <input type="text" name="username"><br />
+        <input type="submit" value="Login">
+        </form>
+    {% endif %}
+    <hr>
+    <p>Thanks for visiting my site.</p>
+</body>
+</html>

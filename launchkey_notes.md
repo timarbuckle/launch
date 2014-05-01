@@ -45,3 +45,16 @@ Storing complete log in /Users/tim/.pip/pip.log
 ```
 
 Fortunately, running this on Ubuntu Linux was successful.
+
+
+## Convert RSA key to PEM
+
+The following command command can be used to convert the RSA Private Key to
+a PEM file for use by the python API.
+
+    openssl rsa -in LaunchKey.key -outform PEM -out launchkey.pem
+
+## Callbacks
+
+It would be helpful to document the URL parameters and POST data associated
+with callbacks and the expected response from the web app.

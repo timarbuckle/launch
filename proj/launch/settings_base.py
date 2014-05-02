@@ -94,6 +94,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-LAUNCHKEY_APP_KEY = '3186808161'
-LAUNCHKEY_SECRET_KEY = '4if154ochz9th2a8mz3l0raakc4o6bf1'
-LAUNCHKEY_PRIVATE_KEY = '/home/tima/projects/launchkey/proj/launch/launch.pem'
+LAUNCHKEY_APP_KEY = ''
+LAUNCHKEY_SECRET_KEY = ''
+LAUNCHKEY_PRIVATE_KEY = '<path-to-pem-file>'

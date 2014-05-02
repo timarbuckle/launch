@@ -3,39 +3,51 @@ import logging
 
 from django.contrib.auth import authenticate, login, logout
 from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.template import RequestContext
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
 
+#from .client import LaunchKeyClient
+from .manager import LaunchManager
 from .models import LaunchKeyModel
 
 
 logger = logging.getLogger()
 
 
-"""
-[01/May/2014 18:29:47] "POST /launch/auth?auth_request=occ1h35onzjr24e0dpwz5hqbbef7wqj3&user_hash=oXwQPwtqmtAQodXwMpj3c0oNTMDMR4feMWE9j2a94SU&auth=Y0RbKB1T8GomYaYisiXJLQQXpgYHdRPH5TCYP8nifOssf0ghp8sO2iM4tQ9uxdFb%0D%0AOJDmP1s7nHXvRrSYgDnOw%5C%2FgKkG0eLsmfX%2BF%5C%2Fj%5C%2F35THgp5YyKvGJ8aCGCH20yOLl%2B%0D%0AczhBGh9rhO7sxpESFNJPgkCxV%2BQrKo%2BH92ZAF5zNXkS1CD5fGvmvhf9DMWQTktMi%0D%0AgrVzXhmGOnYong%2BRyLp04wBbhN9fUo5FMGZlzT5DRD2slyTnSHa2ns76D9FtjKPm%0D%0Ad9IhyqSo7NBbXWhv1fWpBSgDzL1eG5KM5MiJSC0jpUszaIVt0AxXXiKOrBGrIN8t%0D%0A%2B4G37eGCvdyXsoj%2BJHQ8UQ%3D%3D HTTP/1.0" 403 2282
+class CsrfDisableView(View):
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super(CsrfDisableView, self).dispatch(*args, **kwargs)
 
 
-[01/May/2014 18:33:01] "POST /launch/auth?deorbit=%7B%22launchkey_time%22%3A+%222014-05-01+18%3A33%3A00%22%2C+%22user_hash%22%3A+%22oXwQPwtqmtAQodXwMpj3c0oNTMDMR4feMWE9j2a94SU%22%7D&signature=Bz21ZVgPCRAPZfPFs26qBgelsOPPeX4AagVBKXIYJwJaLR2zpH9WT9dbLaGF3tLVD0E6a1GcPiib7Z9oZwZsRVaPVoIdYYId1Anpz6Weuo1dKw98oIXn%2F7uel5tmR7a2f3qh10dGgWXKB%2F4BVvSj4rU01zXwJUCPbABQs8cG4IuhKWFDPca7ysq4cdaoDm%2FaxOYdAN49puJD9t6F4kyY384PLo%2Bde5XwTgh%2BcHp%2B8jngORnwNpEIoUtLxQW3hcHTelmZctidqNDvAup4lEjDddklV5S6tgnIKHd%2FPmIjN%2BCrHZRGZDZpHNdqoN4bUsTOFbbp367xgc0zQEcbLIda%2Bw%3D%3D HTTP/1.0" 403 2282
-"""
-
-
-class HomeView(View):
+class HomeView(CsrfDisableView):
 
     def _response(self, request):
         if request.user.is_authenticated():
+            mgr = LaunchManager()
+            is_auth = mgr.is_authorized(request.user)
+            if is_auth:
+                prstatus = {'message': 'Authorized'}
+            else:
+                prstatus = mgr.poll_request(request.user)
+            logger.warn('poll request status: %s' % prstatus)
             lk = LaunchKeyModel.objects.get(user=request.user)
-            c = RequestContext(request, {'data':
-                {
-                    'username': request.user.username,
-                    'auth_request': lk.auth_request,
-                    'auth': lk.auth,
-                    'user_hash': lk.user_hash,
-                    'device_id': lk.device_id,
-                    'app_pins': lk.app_pins
-                }
+            c = RequestContext(request, {
+                'username': request.user.username,
+                'auth_request': lk.auth_request,
+                'auth': lk.auth,
+                'user_hash': lk.user_hash,
+                'is_authorized': is_auth,
+                'device_id': lk.device_id,
+                'app_pins': lk.app_pins,
+                'authorized': lk.is_authorized(),
+                'poll_request status': prstatus.get('message', 'Good')
             })
             return render(request, 'home.html', c)
         else:
@@ -45,7 +57,7 @@ class HomeView(View):
         return self._response(request)
 
 
-class LoginView(View):
+class LoginView(CsrfDisableView):
 
     def post(self, request, *args, **kwargs):
         username = request.POST.get('username', None)
@@ -56,34 +68,43 @@ class LoginView(View):
         return HttpResponseRedirect(reverse('home'))
 
 
-class LogoutView(View):
+class LogoutView(CsrfDisableView):
 
     def post(self, request, *args, **kwargs):
+        mgr = LaunchManager()
+        mgr.logout(request.user)
         logout(request)
         return HttpResponseRedirect(reverse('home'))
 
 
-class AuthView(View):
+class AuthView(CsrfDisableView):
 
-    def _auth_request(self, request, *args, **kwargs):
-        logger.info('auth_request')
-        logger.info(request.POST)
-        return HttpResponseRedirect(reverse('home'))
+    def _auth_request(self, request, auth_request, *args, **kwargs):
+        try:
+            lk = LaunchKeyModel.objects.get(auth_request=auth_request)
+        except LaunchKeyModel.DoesNotExist:
+            lk = None
+        ## check is_authorized, store auth response
+        lk.is_authorized = True
+        lk.auth = request.GET.get('auth')
+        lk.user_hash = request.GET.get('user_hash')
+        lk.save()
 
-    def _deorbit_request(self, request, *args, **kwargs):
-        logger.info('deorbit')
-        logger.info(request.POST)
-        return HttpResponseRedirect(reverse('home'))
+    def _deorbit_request(self, request, deorbit, *args, **kwargs):
+        signature = request.GET.get('signature', None)
+        #user_hash = deorbit.get('user_hash', None)
+        #launchkey_time = deorbit.get('launchkey_time', None)
+        mgr = LaunchManager()
+        mgr.deorbit(deorbit, signature)
 
     def post(self, request, *args, **kwargs):
-        import pdb; pdb.set_trace()
         auth_request = request.GET.get('auth_request', None)
         deorbit = request.GET.get('deorbit', None)
 
         if auth_request:
-            return self._auth_request(request, *args, **kwargs)
+            self._auth_request(request, auth_request, *args, **kwargs)
         elif deorbit:
-            return self._deorbit_request(request, *args, **kwargs)
-
-        logger.warn('Unexpected auth request.\n%s' % request.GET)
-        return HttpResponseRedirect(reverse('home'))
+            self._deorbit_request(request, deorbit, *args, **kwargs)
+        else:
+            logger.warn('Unexpected auth request.\n%s' % request.GET)
+        return HttpResponse()

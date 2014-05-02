@@ -9,14 +9,28 @@
     {% if username %}
         <form name="logout" action="/launch/logout" method="post">
         {% csrf_token %}
-        <h2>Hello {{ username }}</h2>
-
         <table width="50%">
-            {% for key, value in data %}
             <tr>
-                <td>{{ key }}</td><td>{{ value }}</td>
+                <td>Username</td><td>{{ username }}</td>
             </tr>
-            {% endfor %}
+            <tr>
+                <td>Auth_Request</td><td>{{ auth_request }}</td>
+            </tr>
+            <tr>
+                <td>Auth</td><td>{{ auth }}</td>
+            </tr>
+            <tr>
+                <td>User_Hash</td><td>{{ user_hash }}</td>
+            </tr>
+            <tr>
+                <td>Device_ID</td><td>{{ device_id }}</td>
+            </tr>
+            <tr>
+                <td>App_Pins</td><td>{{ app_pins }}</td>
+            </tr>
+            <tr>
+                <td>Poll_Request_Status</td><td>{{ poll_request_status }}</td>
+            </tr>
         </table>
 
         <input type="submit" value="Logout">
@@ -28,7 +42,7 @@
         <input type="submit" value="Login">
         </form>
     {% endif %}
-    <hr>
+    <hr />
     <p>Thanks for visiting my site.</p>
 </body>
 </html>

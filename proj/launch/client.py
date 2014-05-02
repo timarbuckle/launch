@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
-#import json
 import launchkey
-#from pprint import pprint
 
 from django.conf import settings
 
@@ -12,7 +10,7 @@ PRIVATE_KEY = open(settings.LAUNCHKEY_PRIVATE_KEY, 'r').read()
 
 class LaunchKeyClient:
     """
-    Wrap launchkey api in django client
+    Wrap launchkey api for django app
     """
     def __init__(self, auth_request=None, auth=None):
         self.api = launchkey.API(

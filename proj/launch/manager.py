@@ -1,9 +1,18 @@
 
+from django.contrib.sessions.models import Session
+
 from .client import LaunchKeyClient
 from .models import LaunchKeyModel
 
 
 class LaunchManager:
+
+    def _get_lk(self, user):
+        try:
+            lk = LaunchKeyModel.objects.get(user=user)
+        except LaunchKeyModel.DoesNotExist:
+            lk = None
+        return lk
 
     def authorize(self, user):
         """
@@ -18,20 +27,14 @@ class LaunchManager:
         """
         return authorized state in db
         """
-        try:
-            lk = LaunchKeyModel.objects.get(user=user)
-        except LaunchKeyModel.DoesNotExist:
-            return False
+        lk = self._get_lk(user)
         return lk.is_authorized()
 
     def poll_request(self, user):
         """
         call api poll_request
         """
-        try:
-            lk = LaunchKeyModel.objects.get(user=user)
-        except LaunchKeyModel.DoesNotExist:
-            return None
+        lk = self._get_lk(user)
         client = LaunchKeyClient(lk.auth_request)
         status = client.poll_request()
         if 'auth' in status:
@@ -47,11 +50,22 @@ class LaunchManager:
         """
         send logout via api, update database status
         """
-        lk = LaunchKeyModel.objects.get(user=user)
+        lk = self._get_lk(user)
         client = LaunchKeyClient(lk.auth_request)
         client.logout()
         lk.delete()
 
     def deorbit(self, deorbit, signature):
         client = LaunchKeyClient()
-        client.deorbit(deorbit, signature)
+        user_hash = client.deorbit(deorbit, signature)
+        try:
+            lk = LaunchKeyModel.objects.get(user_hash=user_hash)
+        except LaunchKeyModel.DoesNotExist:
+            lk = None
+        if lk:
+            # clear session for this user
+            [s.delete() for s in Session.objects.all()
+             if s.get_decoded().get('_auth_user_id') == lk.user.id]
+            client = LaunchKeyClient(lk.auth_request)
+            client.logout()
+            lk.delete()

@@ -47,7 +47,7 @@ class HomeView(CsrfDisableView):
                 'device_id': lk.device_id,
                 'app_pins': lk.app_pins,
                 'authorized': lk.is_authorized(),
-                'poll_request status': prstatus.get('message', 'Good')
+                'poll_request_status': prstatus.get('message', 'Good')
             })
             return render(request, 'home.html', c)
         else:

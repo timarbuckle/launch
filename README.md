@@ -1,13 +1,38 @@
-# LaunchKey Notes
+# Launch
+
+## Overview
+
+This is a demo Django app to test the LaunchKey API.
+
+## Instructions
+
+Modify these as needed
+
+    ## clone the repo
+    $ cd launch
+    $ virtualenv --no-site-packages env
+    $ source env/bin/activate
+    $ pip install -r requirements.txt
+    $ cd proj
+    $ python ./manage.py syncdb
+
+Acquire app_key, secret_key and private_key from LaunchKey
+developer app setup. Modify these launch/settings.py variables:
+
+ * LAUNCHKEY_APP_KEY = ''
+ * LAUNCHKEY_SECRET_KEY = ''
+ * LAUNCHKEY_PRIVATE_KEY = '<path_to_file>'
+
+## Notes
 
 These are some of the things I noticed while developing my app.
 
-## iOS App
+### iOS App
 
 The iOS app shows "Swipe right for tutorial" but the user actually must
 swipe left.
 
-## Python SDK
+### Python SDK
 
 On Github, the installation instructions via pip show
 
@@ -19,7 +44,7 @@ The command should be
 
 Same problem on https://launchkey.com/docs/sdk/python/
 
-## PIP Install on OSX
+### PIP Install on OSX
 
 Running the above pip install command on my mac
 resulted in the following error:
@@ -40,21 +65,19 @@ clang: note: this will be a hard error (cannot be downgraded to a warning) in th
 error: command 'cc' failed with exit status 1
 
 ----------------------------------------
-Command /Users/tim/projects/launchkey/env/bin/python -c "import setuptools;__file__='/Users/tim/projects/launchkey/env/build/pycrypto/setup.py';exec(compile(open(__file__).read().replace('\r\n', '\n'), __file__, 'exec'))" install --record /var/folders/gj/565xs7nx7hjfwl3v91168zf00000gn/T/pip-PPGqWw-record/install-record.txt --single-version-externally-managed --install-headers /Users/tim/projects/launchkey/env/include/site/python2.7 failed with error code 1 in /Users/tim/projects/launchkey/env/build/pycrypto
-Storing complete log in /Users/tim/.pip/pip.log
+Command python -c "import setuptools;__file__='.../env/build/pycrypto/setup.py';exec(compile(open(__file__).read().replace('\r\n', '\n'), __file__, 'exec'))" install --record /var/folders/gj/565xs7nx7hjfwl3v91168zf00000gn/T/pip-PPGqWw-record/install-record.txt --single-version-externally-managed --install-headers .../env/include/site/python2.7 failed with error code 1 in .../env/build/pycrypto
 ```
 
 Fortunately, running this on Ubuntu Linux was successful.
 
-
-## Convert RSA key to PEM
+### Convert RSA key to PEM
 
 The following command command can be used to convert the RSA Private Key to
 a PEM file for use by the python API.
 
     openssl rsa -in LaunchKey.key -outform PEM -out launchkey.pem
 
-## Callbacks
+### Callbacks
 
 It would be helpful to document the URL parameters and POST data associated
 with callbacks and the expected response from the web app.

@@ -22,7 +22,7 @@ and modify these variables:
 
  * LAUNCHKEY_APP_KEY = ''
  * LAUNCHKEY_SECRET_KEY = ''
- * LAUNCHKEY_PRIVATE_KEY = '<path_to_file>'
+ * LAUNCHKEY_PRIVATE_KEY = 'path_to_file'
 
 ## Notes
 

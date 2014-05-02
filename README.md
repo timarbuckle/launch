@@ -17,12 +17,21 @@ Modify these as needed
     $ python ./manage.py syncdb
 
 Acquire app_key, secret_key and private_key from LaunchKey
-developer app setup. Copy launch/settings_base.py to launch/settings.py
+developer app setup. 
+
+### Convert RSA key to PEM
+
+The following command command can be used to convert the RSA Private Key to
+a PEM file for use by the python API.
+
+    openssl rsa -in LaunchKey.key -outform PEM -out launchkey.pem
+
+Copy launch/settings_base.py to launch/settings.py
 and modify these variables:
 
  * LAUNCHKEY_APP_KEY = ''
  * LAUNCHKEY_SECRET_KEY = ''
- * LAUNCHKEY_PRIVATE_KEY = 'path_to_file'
+ * LAUNCHKEY_PRIVATE_KEY = 'path_to_generated_pem_file'
 
 ## Notes
 
@@ -70,15 +79,3 @@ Command python -c "import setuptools;__file__='.../env/build/pycrypto/setup.py';
 ```
 
 Fortunately, running this on Ubuntu Linux was successful.
-
-### Convert RSA key to PEM
-
-The following command command can be used to convert the RSA Private Key to
-a PEM file for use by the python API.
-
-    openssl rsa -in LaunchKey.key -outform PEM -out launchkey.pem
-
-### Callbacks
-
-It would be helpful to document the URL parameters and POST data associated
-with callbacks and the expected response from the web app.

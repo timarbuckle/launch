@@ -17,7 +17,8 @@ Modify these as needed
     $ python ./manage.py syncdb
 
 Acquire app_key, secret_key and private_key from LaunchKey
-developer app setup. Modify these launch/settings.py variables:
+developer app setup. Copy launch/settings_base.py to launch/settings.py
+and modify these variables:
 
  * LAUNCHKEY_APP_KEY = ''
  * LAUNCHKEY_SECRET_KEY = ''
